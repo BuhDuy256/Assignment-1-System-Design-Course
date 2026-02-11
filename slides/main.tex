@@ -1,0 +1,126 @@
+\documentclass[aspectratio=169]{beamer}
+
+% Theme and color scheme
+\usetheme{Madrid}
+\usecolortheme{default}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+
+% Code listing settings
+\lstset{
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{gray},
+    stringstyle=\color{red},
+    breaklines=true,
+    frame=single
+}
+
+% Title page information
+\title{System Design Course}
+\subtitle{Assignment 1}
+\author{Your Name}
+\institute{Your University}
+\date{\today}
+
+% Remove navigation symbols
+\setbeamertemplate{navigation symbols}{}
+
+% Add slide numbers
+\setbeamertemplate{footline}[frame number]
+
+\begin{document}
+
+% Title slide
+\begin{frame}
+    \titlepage
+\end{frame}
+
+% Table of contents
+\begin{frame}{Outline}
+    \tableofcontents
+\end{frame}
+
+% Section 1
+\section{Introduction}
+
+\begin{frame}{Introduction}
+    \begin{itemize}
+        \item Welcome to the presentation
+        \item This is a sample beamer template
+        \item Customize it according to your needs
+    \end{itemize}
+\end{frame}
+
+% Section 2
+\section{System Overview}
+
+\begin{frame}{System Architecture}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \textbf{Key Components:}
+            \begin{itemize}
+                \item Component A
+                \item Component B
+                \item Component C
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \textbf{Features:}
+            \begin{enumerate}
+                \item Feature 1
+                \item Feature 2
+                \item Feature 3
+            \end{enumerate}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+% Section 3
+\section{Technical Details}
+
+\begin{frame}[fragile]{Code Example}
+    \begin{lstlisting}[language=Python]
+# Sample code
+def hello_world():
+    print("Hello, World!")
+    return True
+    \end{lstlisting}
+\end{frame}
+
+\begin{frame}{Key Points}
+    \begin{block}{Important Note}
+        This is an important note in a block.
+    \end{block}
+    
+    \begin{alertblock}{Warning}
+        This is a warning message.
+    \end{alertblock}
+    
+    \begin{exampleblock}{Example}
+        This is an example block.
+    \end{exampleblock}
+\end{frame}
+
+% Section 4
+\section{Conclusion}
+
+\begin{frame}{Summary}
+    \begin{itemize}
+        \item Point 1: Key takeaway
+        \item Point 2: Important result
+        \item Point 3: Future work
+    \end{itemize}
+    
+    \vspace{1cm}
+    \centering
+    \Large Thank you for your attention!
+\end{frame}
+
+\end{document}
