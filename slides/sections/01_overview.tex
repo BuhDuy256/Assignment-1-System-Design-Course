@@ -1,10 +1,92 @@
 \section{Tổng quan về Design Patterns}
 
-\begin{frame}{Design Patterns là gì?}
+% --- SLIDE 1: Vấn đề thực tế khi KHÔNG dùng Design Patterns ---
+\begin{frame}{Khi không có Design Patterns...}
+  \begin{itemize}
+    \item \textbf{Tight coupling} --- thay đổi 1 class ảnh hưởng hàng loạt class khác
+    \item \textbf{Code duplication} --- cùng logic lặp lại ở nhiều nơi
+    \item \textbf{Khó mở rộng} --- thêm feature mới = viết lại cả module
+    \item \textbf{Bảo trì tốn kém} --- fix bug chỗ này, sinh bug chỗ khác
+    \item \textbf{Giao tiếp khó khăn} --- mỗi dev giải quyết cùng bài toán theo cách khác nhau
+  \end{itemize}
 \end{frame}
 
-\begin{frame}{Tại sao sử dụng Design Patterns?}
+% --- SLIDE 2: Hậu quả trong dự án thực tế ---
+\begin{frame}{Hậu quả trong thực tế}
+  \begin{alertblock}{Dự án phần mềm thất bại vì...}
+    \begin{itemize}
+      \item Hệ thống ``cứng'' --- không thích ứng khi requirement thay đổi
+      \item Technical debt tích lũy --- càng sửa càng rối
+      \item Onboarding chậm --- dev mới không hiểu kiến trúc
+      \item Refactor = viết lại từ đầu --- vì code quá phụ thuộc lẫn nhau
+    \end{itemize}
+  \end{alertblock}
+  
+  \vspace{0.5em}
+  \centering
+  \textit{$\Rightarrow$ Những vấn đề này đã được giải quyết từ lâu...}
 \end{frame}
 
-\begin{frame}{Phân loại Design Patterns}
+% --- SLIDE 3: Design Patterns giải quyết gì? ---
+\begin{frame}{Design Patterns giải quyết những gì?}
+  \begin{block}{Giải pháp đã được kiểm chứng}
+    \begin{itemize}
+      \item \textbf{Giảm coupling} --- các thành phần giao tiếp qua abstraction
+      \item \textbf{Tăng extensibility} --- thêm mới mà không sửa code cũ (OCP)
+      \item \textbf{Tái sử dụng} --- giải pháp template, áp dụng cho nhiều bài toán
+      \item \textbf{Chuẩn hóa giao tiếp} --- ``dùng Observer pattern'' $>$ giải thích 20 dòng
+    \end{itemize}
+  \end{block}
+  
+  \vspace{0.5em}
+  \centering
+  \textit{Không phải code cụ thể --- mà là \textbf{cách tư duy thiết kế}.}
+\end{frame}
+
+% --- SLIDE 4: Phân loại 3 nhóm ---
+\begin{frame}{Ba nhóm Design Patterns}
+  \begin{columns}[T]
+    \begin{column}{0.32\textwidth}
+      \begin{block}{\centering Creational}
+        \small
+        \textit{Tạo object}\\[0.3em]
+        Kiểm soát cách khởi tạo đối tượng, giảm dependency vào concrete class
+      \end{block}
+    \end{column}
+    
+    \begin{column}{0.32\textwidth}
+      \begin{block}{\centering Structural}
+        \small
+        \textit{Tổ chức cấu trúc}\\[0.3em]
+        Kết hợp objects/classes thành cấu trúc lớn hơn mà vẫn linh hoạt
+      \end{block}
+    \end{column}
+    
+    \begin{column}{0.32\textwidth}
+      \begin{block}{\centering Behavioral}
+        \small
+        \textit{Phân phối hành vi}\\[0.3em]
+        Quản lý giao tiếp và trách nhiệm giữa các objects
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% --- SLIDE 5: Lưu ý quan trọng ---
+\begin{frame}{Lưu ý khi sử dụng Design Patterns}
+  \begin{exampleblock}{Dùng đúng lúc}
+    \begin{itemize}
+      \item Pattern không phải ``silver bullet'' --- dùng sai = over-engineering
+      \item Chỉ áp dụng khi gặp vấn đề cụ thể mà pattern giải quyết
+      \item Pattern $\neq$ Framework --- pattern là ý tưởng, framework là implementation
+    \end{itemize}
+  \end{exampleblock}
+  
+  \begin{alertblock}{Tránh lạm dụng}
+    \begin{itemize}
+      \item KISS --- Keep It Simple, Stupid
+      \item YAGNI --- You Aren't Gonna Need It
+      \item Đừng dùng pattern chỉ vì ``nghe hay''
+    \end{itemize}
+  \end{alertblock}
 \end{frame}

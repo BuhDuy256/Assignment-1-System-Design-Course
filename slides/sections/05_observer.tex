@@ -1,16 +1,217 @@
 \section{Observer (Behavioral)}
 
-\begin{frame}{Observer: Vấn đề}
+\begin{frame}
+  \begin{center}
+    \Huge\textbf{Observer}\\[0.5em]
+    \Large\textcolor{mypurple}{Behavioral Pattern}
+  \end{center}
 \end{frame}
 
-\begin{frame}{Observer: Câu hỏi cốt lõi}
+% ============================================================
+% SLIDE 1 — BỐI CẢNH: Khi nào vấn đề xuất hiện?
+% ============================================================
+\begin{frame}{Observer: Bối cảnh thực tế}
+  \textbf{Tình huống phổ biến:}
+  \begin{itemize}
+    \item Một đối tượng \textbf{thay đổi trạng thái}, và \textbf{nhiều đối tượng khác} cần biết
+    \item Danh sách ``người cần biết'' \textbf{không cố định} --- có thể thêm/bớt lúc runtime
+    \item Nguồn dữ liệu \textbf{không nên biết} chi tiết về từng nơi tiêu thụ
+  \end{itemize}
+
+  \vspace{0.5em}
+  \textbf{Ví dụ thực tế:}
+  \begin{itemize}
+    \item \textcolor{myblue}{Event system}: user click $\rightarrow$ update UI + log analytics + validate form
+    \item \textcolor{myblue}{Data binding}: model thay đổi $\rightarrow$ tự động render lại view
+    \item \textcolor{myblue}{Stock ticker}: giá cổ phiếu thay đổi $\rightarrow$ thông báo nhiều dashboard
+    \item \textcolor{myblue}{Message broker}: producer gửi event $\rightarrow$ nhiều consumer xử lý
+  \end{itemize}
+
+  \vspace{0.5em}
+  \textcolor{myred}{\textbf{Điểm chung:}} Quan hệ \textbf{one-to-many} giữa nguồn dữ liệu và nơi tiêu thụ,
+  với danh sách consumer \textbf{thay đổi liên tục}.
 \end{frame}
 
-\begin{frame}{Observer: Cách hoạt động}
+% ============================================================
+% SLIDE 2 — NỖI ĐAU: Code không có pattern
+% ============================================================
+\begin{frame}[fragile]{Observer: Nỗi đau khi không có pattern}
+  \begin{columns}[T]
+    \begin{column}{0.50\textwidth}
+      \textbf{Cách tiếp cận ``bình thường'':}\\[0.2em]
+      {\small gọi trực tiếp}
+
+      \vspace{0.3em}
+      \footnotesize
+      \begin{verbatim}
+class WeatherStation {
+  PhoneDisplay phone;
+  WebDashboard web;
+  Logger logger;
+
+  void updateTemp(double t) {
+    this.temp = t;
+    phone.refresh(t);
+    web.render(t);
+    logger.log(t);
+    // thêm consumer mới?
+    // → sửa class này!
+  }
+}
+      \end{verbatim}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \textbf{Hậu quả:}
+      \begin{itemize}
+        \item \textcolor{myred}{Tight coupling}: WeatherStation phụ thuộc \textbf{mọi} consumer
+        \item \textcolor{myred}{Vi phạm OCP}: thêm consumer $=$ sửa source
+        \item \textcolor{myred}{Không linh hoạt}: không subscribe/unsubscribe lúc runtime
+        \item \textcolor{myred}{Khó test}: phải mock tất cả dependency
+        \item \textcolor{myred}{God object}: source biết quá nhiều
+      \end{itemize}
+    \end{column}
+  \end{columns}
 \end{frame}
 
-\begin{frame}{Observer: Khi nào dùng?}
+% ============================================================
+% SLIDE 3 — GIẢI PHÁP NGÂY THƠ
+% ============================================================
+\begin{frame}[fragile]{Observer: Những giải pháp ngây thơ}
+  \textbf{Thử lần 1: Polling --- consumer tự hỏi source liên tục}
+  \begin{itemize}
+    \item Consumer gọi \texttt{station.getTemp()} mỗi $n$ giây
+    \item \textcolor{myred}{Lãng phí tài nguyên}: hầu hết lần check không có gì mới
+    \item \textcolor{myred}{Delay}: data mới có thể bị trễ tới $n$ giây
+    \item \textcolor{myred}{Không scale}: 100 consumer $\times$ polling = flood request
+  \end{itemize}
+
+  \vspace{0.3em}
+  \textbf{Thử lần 2: Callback functions trực tiếp}
+  \begin{itemize}
+    \item Source giữ list callback, gọi khi data thay đổi
+    \item \textcolor{myorange}{Tốt hơn}, nhưng:
+    \begin{itemize}
+      \item Không có contract chung $\Rightarrow$ mỗi callback khác signature
+      \item Khó quản lý lifecycle (memory leak nếu quên remove)
+      \item Không có cấu trúc --- dễ thành ``callback hell''
+    \end{itemize}
+  \end{itemize}
+
+  \vspace{0.2em}
+  \textcolor{myred}{\textbf{Cần:}} Cơ chế thông báo \textbf{có cấu trúc}, \textbf{loose coupling}, \textbf{dễ quản lý} lifecycle.
 \end{frame}
 
+% ============================================================
+% SLIDE 4 — INSIGHT CỐT LÕI
+% ============================================================
+\begin{frame}{Observer: Insight cốt lõi}
+  \begin{center}
+    \Large\textcolor{myblue}{\textbf{Đảo ngược hướng phụ thuộc}}\\[0.2em]
+    \normalsize Source chỉ \textbf{phát tín hiệu},\\
+    ai quan tâm thì \textbf{tự đăng ký} nhận.
+  \end{center}
+
+  \vspace{0.3em}
+  \textbf{Ý tưởng then chốt:}
+  \begin{enumerate}
+    \item Định nghĩa \textbf{interface chung} cho tất cả observer
+    \item Subject chỉ biết interface, \textbf{không biết} implementation
+    \item Observer tự \texttt{subscribe()} / \texttt{unsubscribe()}
+  \end{enumerate}
+
+  \vspace{0.3em}
+  \textbf{Nguyên lý:}
+  \begin{itemize}
+    \item \textcolor{mygreen}{\textbf{Loose coupling}}: chỉ biết nhau qua interface
+    \item \textcolor{mygreen}{\textbf{Open/Closed Principle}}: thêm observer $=$ zero changes
+    \item \textcolor{mygreen}{\textbf{Hollywood Principle}}: ``Don't call us, we'll call you''
+  \end{itemize}
+\end{frame}
+
+% ============================================================
+% SLIDE 5 — CẤU TRÚC & CÁCH HOẠT ĐỘNG
+% ============================================================
+\begin{frame}[fragile]{Observer: Cách hoạt động}
+  \textbf{Các vai trò trong pattern:}
+  \begin{itemize}
+    \item \textcolor{myblue}{\textbf{Subject}}: giữ list observers, cung cấp \texttt{subscribe/unsubscribe/notify}
+    \item \textcolor{mygreen}{\textbf{Observer}}: định nghĩa \texttt{update()} --- contract chung
+    \item \textcolor{mypurple}{\textbf{ConcreteObserver}}: implement \texttt{update()}
+  \end{itemize}
+
+  \vspace{0.2em}
+  \textbf{Flow thực thi:}
+  \footnotesize
+  \begin{verbatim}
+  WeatherStation station = new WeatherStation();
+
+  station.subscribe(new PhoneDisplay());
+  station.subscribe(new WebDashboard());
+  station.subscribe(new Logger());
+
+  station.setTemp(28.5);
+  // → notifyAll() → loop List<Observer>
+  //   → PhoneDisplay.update(28.5)
+  //   → WebDashboard.update(28.5)
+  //   → Logger.update(28.5)
+  \end{verbatim}
+
+  \textcolor{mygreen}{\textbf{Kết quả:}} Thêm consumer = tạo class implement Observer, \textbf{không sửa} Subject.
+\end{frame}
+
+% ============================================================
+% SLIDE 6 — TRADE-OFFS
+% ============================================================
 \begin{frame}{Observer: Trade-offs}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \textcolor{mygreen}{\textbf{Được gì:}}
+      \begin{itemize}
+        \item Subject và Observer \textbf{loosely coupled}
+        \item Thêm/bớt observer \textbf{lúc runtime} dễ dàng
+        \item Tuân thủ OCP --- mở rộng không sửa code cũ
+        \item Tái sử dụng Subject cho nhiều ngữ cảnh
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \textcolor{myred}{\textbf{Mất gì:}}
+      \begin{itemize}
+        \item \textbf{Thứ tự thông báo} không đảm bảo
+        \item \textbf{Memory leak}: quên unsubscribe $\Rightarrow$ giữ reference
+        \item \textbf{Cascade updates}: observer A $\rightarrow$ trigger B $\rightarrow$ vòng lặp
+        \item \textbf{Khó debug}: flow ``vô hình'' --- không trace được
+        \item \textbf{Performance}: nhiều observer $\times$ frequent updates
+      \end{itemize}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.4em}
+  \centering
+  \textcolor{myorange}{\textbf{Lưu ý:}} Hệ thống lớn nên dùng \textbf{Event Bus} / \textbf{Message Queue}.
+\end{frame}
+
+% ============================================================
+% SLIDE 7 — KHI NÀO LÀ OVER-ENGINEERING?
+% ============================================================
+\begin{frame}{Observer: Khi nào dùng? Khi nào là thừa?}
+  \textcolor{mygreen}{\textbf{Dùng khi:}}
+  \begin{itemize}
+    \item Quan hệ \textbf{one-to-many} với consumer \textbf{không cố định}
+    \item Cần \textbf{decouple} source khỏi logic xử lý --- cross-module
+    \item Hệ thống \textbf{event-driven} với nhiều loại sự kiện
+  \end{itemize}
+
+  \vspace{0.3em}
+  \textcolor{myred}{\textbf{Over-engineering khi:}}
+  \begin{itemize}
+    \item Chỉ \textbf{1 consumer duy nhất} và cố định --- gọi thẳng hơn
+    \item Quan hệ \textbf{sẽ không thay đổi} trong tương lai
+    \item Team nhỏ, codebase nhỏ --- thêm indirection vô ích
+    \item Event \textbf{phải đảm bảo thứ tự} --- Observer không guarantee
+  \end{itemize}
+
+  \vspace{0.3em}
+  \centering
+  \textcolor{myorange}{\textbf{Dấu hiệu over-design:}}\\[0.2em]
+  {\small ``Đếm được số consumer trên 1 tay và chúng không thay đổi.''}
 \end{frame}

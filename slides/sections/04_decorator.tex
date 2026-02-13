@@ -1,16 +1,225 @@
 \section{Decorator (Structural)}
 
-\begin{frame}{Decorator: Vấn đề}
+\begin{frame}
+  \begin{center}
+    \Huge\textbf{Decorator}\\[0.5em]
+    \Large\textcolor{myorange}{Structural Pattern}
+  \end{center}
 \end{frame}
 
-\begin{frame}{Decorator: Câu hỏi cốt lõi}
+% ============================================================
+% SLIDE 1 — BỐI CẢNH: Khi nào vấn đề xuất hiện?
+% ============================================================
+\begin{frame}{Decorator: Bối cảnh thực tế}
+  \textbf{Tình huống phổ biến:}
+  \begin{itemize}
+    \item Bạn có một đối tượng cơ bản đã hoạt động tốt
+    \item Yêu cầu mới: \textit{thêm hành vi bổ sung} mà \textbf{không sửa} code cũ
+    \item Các hành vi bổ sung có thể \textbf{kết hợp tự do} với nhau
+  \end{itemize}
+
+  \vspace{0.5em}
+  \textbf{Ví dụ thực tế:}
+  \begin{itemize}
+    \item \textcolor{myblue}{I/O Streams}: đọc file $\rightarrow$ thêm buffer $\rightarrow$ thêm mã hoá $\rightarrow$ thêm nén
+    \item \textcolor{myblue}{HTTP Middleware}: request $\rightarrow$ logging $\rightarrow$ auth $\rightarrow$ rate-limit
+    \item \textcolor{myblue}{UI Components}: text field $\rightarrow$ scroll bar $\rightarrow$ border $\rightarrow$ shadow
+  \end{itemize}
+
+  \vspace{0.5em}
+  \textcolor{myred}{\textbf{Điểm chung:}} Số lượng tổ hợp tính năng \textbf{tăng theo cấp số nhân},
+  nhưng mỗi tính năng lại \textbf{độc lập} về logic.
 \end{frame}
 
-\begin{frame}{Decorator: Cách hoạt động}
+% ============================================================
+% SLIDE 2 — NỖI ĐAU: Code không có pattern trông như thế nào?
+% ============================================================
+\begin{frame}[fragile]{Decorator: Nỗi đau khi không có pattern}
+  \begin{columns}[T]
+    \begin{column}{0.50\textwidth}
+      \textbf{Cách tiếp cận ``bình thường'':}\\[0.2em]
+      {\small kế thừa cho mọi tổ hợp}
+      
+      \vspace{0.3em}
+      \footnotesize
+      \begin{verbatim}
+class Coffee { ... }
+class CoffeeWithMilk
+    extends Coffee
+class CoffeeWithSugar
+    extends Coffee
+class CoffeeWithMilkAndSugar
+    extends Coffee
+class CoffeeWithMilkAndWhip
+    extends Coffee
+// ... 2^n subclasses
+      \end{verbatim}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \textbf{Hậu quả:}
+      \begin{itemize}
+        \item \textcolor{myred}{Subclass Explosion}: $n$ topping $\Rightarrow$ $2^n$ class
+        \item \textcolor{myred}{Vi phạm OCP}: thêm topping $=$ sửa hierarchy
+        \item \textcolor{myred}{Code duplication}: logic lặp lại nhiều class
+        \item \textcolor{myred}{Rigid design}: không đổi tổ hợp lúc runtime
+      \end{itemize}
+    \end{column}
+  \end{columns}
 \end{frame}
 
-\begin{frame}{Decorator: Khi nào dùng?}
+% ============================================================
+% SLIDE 3 — GIẢI PHÁP NGÂY THƠ & TẠI SAO THẤT BẠI
+% ============================================================
+\begin{frame}[fragile]{Decorator: Những giải pháp ngây thơ}
+  \begin{columns}[T]
+    \begin{column}{0.52\textwidth}
+      \textbf{Thử lần 1: Dùng boolean flags}
+      
+      \vspace{0.2em}
+      \footnotesize
+      \begin{verbatim}
+class Coffee {
+  bool hasMilk, hasSugar;
+
+  double getCost() {
+    double cost = baseCost;
+    if (hasMilk)    cost += 5;
+    if (hasSugar)   cost += 2;
+    // ... grows forever
+    return cost;
+  }
+}
+      \end{verbatim}
+    \end{column}
+    \begin{column}{0.44\textwidth}
+      \textcolor{myred}{\textbf{Vấn đề:}}
+      
+      \vspace{0.2em}
+      \begin{itemize}
+        \item God class --- biết quá nhiều
+        \item Thêm topping $=$ sửa class \textcolor{myred}{(vi phạm OCP)}
+        \item Không duplicate topping (2 shot milk)
+      \end{itemize}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.3em}
+  \textbf{Thử lần 2: Strategy?}
+  \begin{itemize}
+    \item \textbf{Không hỗ trợ stacking} và thứ tự
+  \end{itemize}
 \end{frame}
 
+% ============================================================
+% SLIDE 4 — INSIGHT CỐT LÕI
+% ============================================================
+\begin{frame}{Decorator: Insight cốt lõi}
+  \begin{center}
+    \Large\textcolor{myblue}{\textbf{Composition over Inheritance}}
+  \end{center}
+
+  \vspace{0.5em}
+  \textbf{Ý tưởng then chốt:}
+  \begin{enumerate}
+    \item Thay vì \textit{tạo subclass} cho mỗi tổ hợp,\\
+          ta \textbf{wrap} đối tượng gốc bằng các lớp bổ sung hành vi
+    \item Mỗi wrapper (decorator) \textbf{cùng interface} với đối tượng gốc\\
+          $\Rightarrow$ client không cần biết đang dùng bao nhiêu lớp wrap
+    \item Decorator có thể \textbf{stack lên nhau} tự do, thay đổi lúc runtime
+  \end{enumerate}
+
+  \vspace{0.5em}
+  \textbf{Nguyên lý thiết kế:}
+  \begin{itemize}
+    \item \textcolor{mygreen}{\textbf{Open/Closed Principle}}: mở rộng hành vi mà \textbf{không sửa} code cũ
+    \item \textcolor{mygreen}{\textbf{Single Responsibility}}: mỗi decorator chỉ lo \textbf{một} hành vi
+    \item \textcolor{mygreen}{\textbf{Transparent wrapping}}: decorator là \textit{``invisible''} với client code
+  \end{itemize}
+\end{frame}
+
+% ============================================================
+% SLIDE 5 — CẤU TRÚC & CÁCH HOẠT ĐỘNG
+% ============================================================
+\begin{frame}[fragile]{Decorator: Cách hoạt động}
+  \textbf{Các vai trò trong pattern:}
+  \begin{itemize}
+    \item \textcolor{myblue}{\textbf{Component}} (interface): contract chung cho tất cả
+    \item \textcolor{mygreen}{\textbf{ConcreteComponent}}: đối tượng gốc cần mở rộng
+    \item \textcolor{myorange}{\textbf{BaseDecorator}}: giữ reference đến component, delegate call
+    \item \textcolor{mypurple}{\textbf{ConcreteDecorator}}: thêm hành vi cụ thể trước/sau delegate
+  \end{itemize}
+
+  \vspace{0.3em}
+  \textbf{Flow thực thi:}
+  \footnotesize
+  \begin{verbatim}
+  Component coffee = new SimpleCoffee();       // cost = 10
+  coffee = new MilkDecorator(coffee);          // +5 → 15
+  coffee = new SugarDecorator(coffee);         // +2 → 17
+  coffee.getCost();  // → SugarDecorator.getCost()
+                     //   → MilkDecorator.getCost()
+                     //     → SimpleCoffee.getCost() = 10
+                     //   return 10 + 5
+                     // return 15 + 2 = 17
+  \end{verbatim}
+
+  \textcolor{mygreen}{\textbf{Kết quả:}} Thêm topping = tạo class mới, \textbf{zero changes} vào code cũ.
+\end{frame}
+
+% ============================================================
+% SLIDE 6 — TRADE-OFFS
+% ============================================================
 \begin{frame}{Decorator: Trade-offs}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \textcolor{mygreen}{\textbf{Được gì:}}
+      \begin{itemize}
+        \item Mở rộng hành vi \textbf{không cần sửa} code cũ
+        \item Kết hợp hành vi \textbf{linh hoạt} lúc runtime
+        \item Tuân thủ SRP --- mỗi class một nhiệm vụ
+        \item Thay thế kế thừa phức tạp bằng composition
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \textcolor{myred}{\textbf{Mất gì:}}
+      \begin{itemize}
+        \item \textbf{Nhiều small classes} --- khó navigate codebase
+        \item \textbf{Ordering matters}: thứ tự wrap ảnh hưởng kết quả\\
+              {\footnotesize (Encrypt → Compress $\neq$ Compress → Encrypt)}
+        \item \textbf{Khó debug}: stack trace dài, nhiều lớp indirection
+        \item \textbf{Unwrapping}: khó lấy lại object gốc bên trong
+      \end{itemize}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.5em}
+  \centering
+  \textcolor{myorange}{\textbf{Lưu ý:}} Decorator phù hợp khi số \textit{loại} hành vi nhiều,\\
+  nhưng mỗi hành vi \textit{đơn giản} và \textit{độc lập}.
+\end{frame}
+
+% ============================================================
+% SLIDE 7 — KHI NÀO LÀ OVER-ENGINEERING?
+% ============================================================
+\begin{frame}{Decorator: Khi nào dùng? Khi nào là thừa?}
+  \textcolor{mygreen}{\textbf{Dùng khi:}}
+  \begin{itemize}
+    \item \textbf{Không được sửa} class gốc (library, legacy code)
+    \item Tổ hợp hành vi \textbf{lớn} và thay đổi thường xuyên
+    \item Cần thay đổi \textbf{lúc runtime}
+  \end{itemize}
+
+  \vspace{0.3em}
+  \textcolor{myred}{\textbf{Over-engineering khi:}}
+  \begin{itemize}
+    \item Chỉ \textbf{1--2 biến thể cố định} --- kế thừa đơn giản hơn
+    \item Hành vi \textbf{không thể tách rời} khỏi object gốc
+    \item Team nhỏ, domain đơn giản --- thêm cognitive load
+    \item Wrap để \textit{``đúng pattern''} mà không cần mở rộng
+  \end{itemize}
+
+  \vspace{0.3em}
+  \centering
+  \textcolor{myorange}{\textbf{Dấu hiệu over-design:}}\\[0.2em]
+  {\small ``Chỉ có 1 decorator và không có kế hoạch thêm.''}
 \end{frame}
