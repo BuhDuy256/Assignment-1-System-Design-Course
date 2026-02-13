@@ -1,126 +1,108 @@
-\documentclass[aspectratio=169]{beamer}
+\documentclass[12pt]{beamer}
 
-% Theme and color scheme
-\usetheme{Madrid}
-\usecolortheme{default}
-
-% Packages
 \usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
-\usepackage{graphicx}
-\usepackage{hyperref}
-\usepackage{listings}
-\usepackage{xcolor}
+\usepackage[T5]{fontenc}
+\usepackage[vietnamese]{babel}
+\usepackage{lmodern} % Đã có font hỗ trợ tốt tiếng Việt
+\usepackage{csquotes} % Thêm gói này để biblatex không báo lỗi
+% \setbeamertemplate{bibliography item}{\insertbiblabel}
+\usepackage{amsmath, amssymb, amsfonts}
+\usepackage{bm}
+\usepackage{pgfplots}
 
-% Code listing settings
-\lstset{
-    basicstyle=\ttfamily\small,
-    keywordstyle=\color{blue},
-    commentstyle=\color{gray},
-    stringstyle=\color{red},
-    breaklines=true,
-    frame=single
+% \usepackage{enumitem} <--- Gây lỗi, đã bỏ
+
+\usepackage[
+  backend=biber,
+  style=authoryear,
+  sorting=none,
+  bibencoding=utf8
+]{biblatex}
+\addbibresource{references.bib}
+
+% Fix: "in" bị dính (inNAACL-HLT -> in NAACL-HLT)
+\renewbibmacro*{in:}{\printtext{\bibstring{in}\space}}
+
+% 2) Fix: bỏ ngoặc kép quanh title để hết dấu ?
+\DeclareFieldFormat[article,inproceedings,book,online,misc]{title}{#1}
+
+
+
+\pgfplotsset{compat=1.10}
+\PassOptionsToPackage{unicode}{hyperref}
+\hypersetup{unicode=true}
+
+\usepackage{xcolor}
+\definecolor{myblue}{RGB}{31,119,180}
+\definecolor{mygreen}{RGB}{44,160,44}
+\definecolor{myorange}{RGB}{255,127,14}
+\definecolor{myred}{RGB}{214,39,40}
+\definecolor{mypurple}{RGB}{148,103,189}
+\definecolor{myblack}{RGB}{0,0,0}
+
+\pgfplotsset{
+  cycle list={{myblue},{mygreen},{myorange},{myred},{mypurple},{myblack}},
+  every axis plot/.append style={line width=1.2pt, mark=none},
 }
 
-% Title page information
-\title{System Design Course}
-\subtitle{Assignment 1}
-\author{Your Name}
-\institute{Your University}
-\date{\today}
+\usetheme{Madrid}
 
-% Remove navigation symbols
-\setbeamertemplate{navigation symbols}{}
+% --- CẤU HÌNH ĐÁNH SỐ 1. 2. 3. CHUẨN BEAMER ---
+% Thay vì dùng setlist, ta dùng lệnh này của Beamer:
+\setbeamertemplate{enumerate items}[default] 
 
-% Add slide numbers
-\setbeamertemplate{footline}[frame number]
+% Hiển thị tên phần ở footer mỗi slide
+\setbeamertemplate{footline}{
+  \leavevmode%
+  \hbox{%
+    \begin{beamercolorbox}[wd=.4\paperwidth,ht=2.25ex,dp=1ex,center]{author in head/foot}%
+      \usebeamerfont{author in head/foot}\insertsection
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[wd=.3\paperwidth,ht=2.25ex,dp=1ex,center]{title in head/foot}%
+      \usebeamerfont{title in head/foot}\insertshortauthor
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[wd=.3\paperwidth,ht=2.25ex,dp=1ex,right]{date in head/foot}%
+      \usebeamerfont{date in head/foot}\insertframenumber{} / \inserttotalframenumber\hspace*{2ex}
+    \end{beamercolorbox}}%
+  \vskip0pt%
+}
+
+% --- THÔNG TIN BÀI THUYẾT TRÌNH ---
+\title[Design Patterns]{\large Design Patterns\\[0.2em]
+\normalsize trong Phát triển Phần mềm}
+
+\subtitle{\scriptsize Phân tích và vận dụng các\\[0.2em]
+\scriptsize Behavioral, Structural và Creational Patterns}
+
+\author[Nhóm 11]{\textbf{Nhóm 11}\\[0.35em]\scriptsize
+23127006 -- Trần Nguyễn Khải Luân\\
+23127179 -- Nguyễn Bảo Duy\\
+23127404 -- Lê Tuấn Lộc}
+
+\institute[HCMUS]{\scriptsize Trường Đại học Khoa học Tự nhiên, ĐHQG-HCM\\[0.25em]
+\scriptsize \textit{Học phần:} Thiết kế phần mềm}
+
 
 \begin{document}
 
-% Title slide
+% Title Page
 \begin{frame}
-    \titlepage
+  \titlepage 
 \end{frame}
 
-% Table of contents
-\begin{frame}{Outline}
-    \tableofcontents
+% Table of Contents
+\begin{frame}{Nội dung trình bày}
+  \tableofcontents
 \end{frame}
 
-% Section 1
-\section{Introduction}
+\input{sections/01_overview.tex}
 
-\begin{frame}{Introduction}
-    \begin{itemize}
-        \item Welcome to the presentation
-        \item This is a sample beamer template
-        \item Customize it according to your needs
-    \end{itemize}
-\end{frame}
+\input{sections/02_factory.tex}
 
-% Section 2
-\section{System Overview}
+\input{sections/03_abstract_factory.tex}
 
-\begin{frame}{System Architecture}
-    \begin{columns}
-        \begin{column}{0.5\textwidth}
-            \textbf{Key Components:}
-            \begin{itemize}
-                \item Component A
-                \item Component B
-                \item Component C
-            \end{itemize}
-        \end{column}
-        \begin{column}{0.5\textwidth}
-            \textbf{Features:}
-            \begin{enumerate}
-                \item Feature 1
-                \item Feature 2
-                \item Feature 3
-            \end{enumerate}
-        \end{column}
-    \end{columns}
-\end{frame}
+\input{sections/04_decorator.tex}
 
-% Section 3
-\section{Technical Details}
-
-\begin{frame}[fragile]{Code Example}
-    \begin{lstlisting}[language=Python]
-# Sample code
-def hello_world():
-    print("Hello, World!")
-    return True
-    \end{lstlisting}
-\end{frame}
-
-\begin{frame}{Key Points}
-    \begin{block}{Important Note}
-        This is an important note in a block.
-    \end{block}
-    
-    \begin{alertblock}{Warning}
-        This is a warning message.
-    \end{alertblock}
-    
-    \begin{exampleblock}{Example}
-        This is an example block.
-    \end{exampleblock}
-\end{frame}
-
-% Section 4
-\section{Conclusion}
-
-\begin{frame}{Summary}
-    \begin{itemize}
-        \item Point 1: Key takeaway
-        \item Point 2: Important result
-        \item Point 3: Future work
-    \end{itemize}
-    
-    \vspace{1cm}
-    \centering
-    \Large Thank you for your attention!
-\end{frame}
+\input{sections/05_observer.tex}
 
 \end{document}

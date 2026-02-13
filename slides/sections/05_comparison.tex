@@ -1,0 +1,82 @@
+\section{So sánh các nhóm Patterns}
+
+\begin{frame}{So sánh 3 loại Design Patterns}
+  \begin{table}
+    \small
+    \begin{tabular}{|l|l|l|}
+      \hline
+      \textbf{Creational} & \textbf{Structural} & \textbf{Behavioral} \\
+      \hline
+      Khởi tạo objects & Cấu trúc & Giao tiếp \\
+      \hline
+      Factory, Builder & Decorator, Adapter & Observer, Strategy \\
+      \hline
+      Tách creation logic & Tổ chức relationships & Phân phối trách nhiệm \\
+      \hline
+      Flexibility tạo object & Flexibility cấu trúc & Flexibility hành vi \\
+      \hline
+    \end{tabular}
+  \end{table}
+\end{frame}
+
+\begin{frame}{Nguyên lý thiết kế phía sau Patterns}
+  \begin{itemize}
+    \item \textbf{Single Responsibility Principle}
+    \begin{itemize}
+      \item Mỗi class chỉ một lý do để thay đổi
+    \end{itemize}
+    \item \textbf{Open/Closed Principle}
+    \begin{itemize}
+      \item Mở cho mở rộng, đóng cho sửa đổi
+    \end{itemize}
+    \item \textbf{Dependency Inversion}
+    \begin{itemize}
+      \item Phụ thuộc vào abstraction, không phụ thuộc vào concrete
+    \end{itemize}
+    \item \textbf{Composition over Inheritance}
+    \begin{itemize}
+      \item Ưu tiên composition thay vì kế thừa
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Ma trận lựa chọn Pattern}
+  \begin{table}
+    \footnotesize
+    \begin{tabular}{|l|l|}
+      \hline
+      \textbf{Tình huống} & \textbf{Pattern} \\
+      \hline
+      Khởi tạo phức tạp & Builder \\
+      \hline
+      Tạo object linh hoạt & Factory Method \\
+      \hline
+      Thêm chức năng tại runtime & Decorator \\
+      \hline
+      Tích hợp interface khác nhau & Adapter \\
+      \hline
+      Thông báo state changes & Observer \\
+      \hline
+      Chọn algorithm linh hoạt & Strategy \\
+      \hline
+    \end{tabular}
+  \end{table}
+\end{frame}
+
+\begin{frame}{Khi nào nên dùng Design Patterns?}
+  \begin{block}{Dùng patterns khi}
+    \begin{itemize}
+      \item Gặp vấn đề đã có giải pháp chứng minh
+      \item Cần code dễ bảo trì, mở rộng
+      \item Làm việc trong team lớn
+    \end{itemize}
+  \end{block}
+  
+  \begin{alertblock}{Tránh over-engineering}
+    \begin{itemize}
+      \item Không áp dụng pattern khi không cần
+      \item KISS: Keep It Simple, Stupid
+      \item YAGNI: You Aren't Gonna Need It
+    \end{itemize}
+  \end{alertblock}
+\end{frame}
