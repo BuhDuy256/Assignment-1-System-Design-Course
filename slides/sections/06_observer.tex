@@ -74,10 +74,10 @@ class WeatherStation {
 \end{frame}
 
 % ============================================================
-% SLIDE 3 — GIẢI PHÁP NGÂY THƠ
+% SLIDE 3 — CÁC GIẢI PHÁP THAY THẾ
 % ============================================================
-\begin{frame}[fragile]{Observer: Những giải pháp ngây thơ}
-  \textbf{Thử lần 1: Polling --- consumer tự hỏi source liên tục}
+\begin{frame}[fragile]{Observer: Các giải pháp thay thế}
+  \textbf{Giải pháp 1: Polling --- consumer tự hỏi source liên tục}
   \begin{itemize}
     \item Consumer gọi \texttt{station.getTemp()} mỗi $n$ giây
     \item \textcolor{myred}{Lãng phí tài nguyên}: hầu hết lần check không có gì mới
@@ -86,7 +86,7 @@ class WeatherStation {
   \end{itemize}
 
   \vspace{0.3em}
-  \textbf{Thử lần 2: Callback functions trực tiếp}
+  \textbf{Giải pháp 2: Callback functions trực tiếp}
   \begin{itemize}
     \item Source giữ list callback, gọi khi data thay đổi
     \item \textcolor{myorange}{Tốt hơn}, nhưng:

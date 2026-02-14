@@ -1,0 +1,207 @@
+\section{Adapter (Structural)}
+
+\begin{frame}
+  \begin{center}
+    \Huge\textbf{Adapter}\\[0.5em]
+    \Large\textcolor{myorange}{Structural Pattern}
+  \end{center}
+\end{frame}
+
+% ============================================================
+% SLIDE 1 — BỐI CẢNH
+% ============================================================
+\begin{frame}{Adapter: Bối cảnh thực tế}
+  \textbf{Vấn đề:}
+  \begin{itemize}
+    \item Hệ thống (\textit{Client}) đang chạy ổn định.
+    \item Cần tích hợp module mới (\textit{Service}) nhưng \textbf{lệch Interface}.
+    \item \textbf{Ràng buộc:} Không thể sửa code của Service (do là thư viện đóng gói hoặc code cũ rủi ro cao).
+  \end{itemize}
+
+  \vspace{1em}
+  \textbf{Ví dụ dễ hiểu:}
+  \begin{itemize}
+    \item \textcolor{myblue}{Du lịch:} Ổ cắm khách sạn 3 chấu (UK) $\leftrightarrow$ Phích cắm máy sấy 2 chấu (VN).
+    \item \textcolor{myblue}{Dữ liệu:} App đọc XML $\leftrightarrow$ API chứng khoán trả về JSON.
+    \item \textcolor{myblue}{Cổng sạc:} Điện thoại cổng Lightning $\leftrightarrow$ Dây cáp USB-C.
+  \end{itemize}
+
+  \vspace{0.5em}
+  \centering
+  \textcolor{myred}{\textbf{Mấu chốt:}} Hai bên muốn nói chuyện nhưng \textbf{bất đồng ngôn ngữ}.
+\end{frame}
+
+% ============================================================
+% SLIDE 2 — NỖI ĐAU (BAD SMELL)
+% ============================================================
+\begin{frame}[fragile]{Adapter: Code xấu khi thiếu Pattern}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \textbf{Cách làm ``cưỡng ép'':}
+      {\footnotesize Sửa Client để chiều lòng từng thư viện.}
+      
+      \vspace{0.2em}
+      \scriptsize
+      \begin{verbatim}
+void processPayment(Object gw) {
+  if (gw instanceof Paypal) {
+    // API cũ
+    ((Paypal)gw).sendMoney(100);
+  } 
+  else if (gw instanceof Stripe) {
+    // API mới khác tên hàm!
+    ((Stripe)gw).makeCharge(100);
+  }
+}
+      \end{verbatim}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \textbf{Hậu quả:}
+      \begin{itemize}
+        \item \textcolor{myred}{Code Rác}: Logic nghiệp vụ lẫn lộn với logic chuyển đổi.
+        \item \textcolor{myred}{Vi phạm OCP}: Thêm cổng thanh toán mới $\rightarrow$ Phải sửa `if/else` trong Client.
+        \item \textcolor{myred}{Khó bảo trì}: Client dính chặt (tightly coupled) vào từng thư viện cụ thể.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ============================================================
+% SLIDE 3 — GIẢI PHÁP NGÂY THƠ
+% ============================================================
+\begin{frame}{Adapter: Tại sao không sửa trực tiếp?}
+  \textbf{Cách 1: Sửa code Thư viện (Service)}
+  \begin{itemize}
+    \item \textcolor{myred}{Bất khả thi:} Thường ta chỉ có file `.dll` hoặc `.jar` (mã đóng).
+    \item \textcolor{myred}{Rủi ro:} Nếu thư viện update phiên bản mới, code sửa sẽ mất sạch.
+  \end{itemize}
+
+  \vspace{1em}
+  \textbf{Cách 2: Sửa code Client}
+  \begin{itemize}
+    \item \textcolor{myred}{Nguy hiểm:} Hệ thống hiện tại quá lớn, sửa Interface chuẩn sẽ làm lỗi dây chuyền (breaking changes).
+    \item \textcolor{myred}{Sai nguyên tắc:} Không nên sửa code đang chạy tốt (Open/Closed).
+  \end{itemize}
+
+  \vspace{1em}
+  \centering
+  $\Rightarrow$ Cần một \textbf{người phiên dịch} đứng giữa.
+\end{frame}
+
+% ============================================================
+% SLIDE 4 — INSIGHT CỐT LÕI
+% ============================================================
+\begin{frame}{Adapter: Insight cốt lõi}
+  \begin{center}
+    \Large\textcolor{myblue}{\textbf{Wrapper / Translator}}
+  \end{center}
+
+  \vspace{0.5em}
+  \textbf{Cơ chế hoạt động:}
+  \begin{enumerate}
+    \item Tạo class \textbf{Adapter} đóng vai trò trung gian.
+    \item Adapter \textbf{giả dạng} làm Interface mà Client mong muốn.
+    \item Bên trong, Adapter \textbf{dịch} lời gọi đó sang ngôn ngữ của Service.
+  \end{enumerate}
+
+  \vspace{0.5em}
+  \textbf{Lợi ích:}
+  \begin{itemize}
+    \item \textcolor{mygreen}{\textbf{Client}}: Không biết mình đang dùng thư viện lạ.
+    \item \textcolor{mygreen}{\textbf{Service}}: Không biết mình đang được gọi bởi Client.
+    \item \textcolor{mygreen}{\textbf{Kết nối}}: Hai bên khớp nhau mà không cần sửa code bên nào.
+  \end{itemize}
+\end{frame}
+
+% ============================================================
+% SLIDE 5 — CODE VÍ DỤ
+% ============================================================
+\begin{frame}[fragile]{Adapter: Ví dụ minh họa}
+  \small
+  \textbf{Bài toán:} Client muốn sạc cổng \texttt{MicroUSB}, nhưng chỉ có dây \texttt{Lightning}.
+  
+  \vspace{0.5em}
+  \scriptsize
+  \begin{verbatim}
+// 1. Target (Cái Client cần)
+interface MicroUsbPhone { void recharge(); }
+// 2. Adaptee (Cái ta đang có)
+class iPhoneLightning { 
+    void useLightning() { print("Sạc bằng Lightning..."); } 
+}
+// 3. Adapter (Đầu chuyển đổi)
+class LightningToMicroAdapter implements MicroUsbPhone {
+    private iPhoneLightning iphone;
+    public LightningToMicroAdapter(iPhoneLightning ip) {
+        this.iphone = ip;
+    }
+    @Override
+    public void recharge() {
+        // Chuyển đổi lời gọi
+        this.iphone.useLightning();
+    }
+}
+  \end{verbatim}
+  \centering
+  \small \textcolor{mygreen}{Client gọi \texttt{recharge()}, Adapter lén gọi \texttt{useLightning()}.}
+\end{frame}
+
+% ============================================================
+% SLIDE 6 — TRADE-OFFS
+% ============================================================
+\begin{frame}{Adapter: Được và Mất}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \textcolor{mygreen}{\textbf{Ưu điểm:}}
+      \begin{itemize}
+        \item \textbf{Tách biệt (Decouple):} Client và Thư viện không phụ thuộc nhau.
+        \item \textbf{Tái sử dụng:} Tận dụng được code cũ mà không cần viết lại.
+        \item \textbf{Linh hoạt:} Muốn đổi thư viện khác? Chỉ cần viết Adapter mới.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \textcolor{myred}{\textbf{Nhược điểm:}}
+      \begin{itemize}
+        \item \textbf{Phức tạp hóa:} Thêm nhiều class mới (Adapter) cho những việc đơn giản.
+        \item \textbf{Hiệu năng:} Tốn thêm một bước gọi hàm trung gian (không đáng kể với app thường).
+      \end{itemize}
+    \end{column}
+  \end{columns}
+
+  \vspace{1em}
+  \centering
+  \fcolorbox{myorange}{white}{
+    \begin{minipage}{0.9\textwidth}
+      \centering \small
+      \textbf{Lưu ý:} Nếu bạn có quyền sửa code cả 2 bên, hãy sửa trực tiếp (Refactor) thay vì dùng Adapter.
+    \end{minipage}
+  }
+\end{frame}
+
+% ============================================================
+% SLIDE 7 — KHI NÀO DÙNG?
+% ============================================================
+\begin{frame}{Adapter: Khi nào dùng?}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textcolor{mygreen}{\textbf{Nên dùng:}}
+      \begin{itemize}
+        \item Tích hợp thư viện \textbf{3rd-party} hoặc API ngoài.
+        \item Làm việc với code cũ (\textbf{Legacy}) không thể chỉnh sửa.
+        \item Muốn thống nhất nhiều class có interface khác nhau về một chuẩn chung.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \textcolor{myred}{\textbf{Không nên dùng (Over-kill):}}
+      \begin{itemize}
+        \item Code nội bộ team tự viết (hãy sửa interface cho khớp luôn).
+        \item Interface hai bên chỉ khác nhau tên hàm một chút (sửa luôn cho nhanh).
+      \end{itemize}
+    \end{column}
+  \end{columns}
+
+  \vspace{1em}
+  \centering
+  \textbf{Dấu hiệu nhận biết:}
+  \textit{``Tôi thích thư viện này, nhưng Interface của nó lạ quá, không gắn vào App được.''}
+\end{frame}

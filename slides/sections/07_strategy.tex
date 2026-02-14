@@ -1,0 +1,192 @@
+\section{Strategy (Behavioral)}
+
+\begin{frame}
+  \begin{center}
+    \Huge\textbf{Strategy}\\[0.5em]
+    \Large\textcolor{myorange}{Behavioral Pattern}
+  \end{center}
+\end{frame}
+
+% ============================================================
+% SLIDE 1 — BỐI CẢNH
+% ============================================================
+\begin{frame}{Strategy: Bối cảnh thực tế}
+  \textbf{Vấn đề:}
+  \begin{itemize}
+    \item Bạn có một tác vụ cụ thể cần thực hiện.
+    \item Có \textbf{nhiều cách} (thuật toán) để giải quyết tác vụ đó.
+    \item Cần chuyển đổi linh hoạt giữa các cách này (thậm chí lúc runtime).
+  \end{itemize}
+
+  \vspace{1em}
+  \textbf{Ví dụ dễ hiểu:}
+  \begin{itemize}
+    \item \textcolor{myblue}{Bản đồ (Google Maps):}
+      Đi từ A đến B $\rightarrow$ Có thể chọn: \textit{Xe hơi, Xe máy, Xe buýt, Đi bộ}.\\
+      (Mục tiêu giống nhau, nhưng thuật toán tìm đường khác nhau).
+    \item \textcolor{myblue}{Thanh toán:}
+      Mua hàng $\rightarrow$ Có thể chọn: \textit{Thẻ tín dụng, Momo, PayPal, Tiền mặt}.
+    \item \textcolor{myblue}{Sắp xếp:}
+      List danh sách $\rightarrow$ Chọn: \textit{QuickSort, MergeSort, BubbleSort}.
+  \end{itemize}
+
+  \vspace{0.5em}
+  \centering
+  \textcolor{myred}{\textbf{Mấu chốt:}} Cùng một mục đích, nhưng cách làm (chiến thuật) khác nhau.
+\end{frame}
+
+% ============================================================
+% SLIDE 2 — NỖI ĐAU (BAD SMELL)
+% ============================================================
+\begin{frame}[fragile]{Strategy: Code xấu khi thiếu Pattern}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \textbf{Cách làm ``Ngây thơ'':}
+      {\footnotesize Dồn hết logic vào một hàm khổng lồ.}
+      
+      \vspace{0.2em}
+      \scriptsize
+      \begin{verbatim}
+class Navigator {
+  void buildRoute(String type) {
+    if (type.equals("ROAD")) {
+      // 100 dòng code tìm đường bộ
+      // Xử lý kẹt xe, đèn đỏ...
+    } 
+    else if (type.equals("WALK")) {
+      // 100 dòng code đường đi bộ
+      // Xử lý vỉa hè, công viên...
+    }
+    // else if ("PUBLIC_TRANSIT")...
+  }
+}
+      \end{verbatim}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \textbf{Hậu quả:}
+      \begin{itemize}
+        \item \textcolor{myred}{Class Khổng Lồ}: Khó đọc, khó bảo trì.
+        \item \textcolor{myred}{Vi phạm OCP}: Muốn thêm loại phương tiện mới $\rightarrow$ Phải sửa class cũ.
+        \item \textcolor{myred}{Khó test}: Lỗi ở thuật toán "Đi bộ" có thể làm hỏng cả chức năng "Đi xe".
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ============================================================
+% SLIDE 3 — GIẢI PHÁP & INSIGHT
+% ============================================================
+\begin{frame}{Strategy: Insight cốt lõi}
+  \begin{center}
+    \Large\textcolor{myblue}{\textbf{Encapsulate Algorithms}}
+  \end{center}
+
+  \vspace{0.5em}
+  \textbf{Ý tưởng then chốt:}
+  \begin{enumerate}
+    \item Tách từng thuật toán ra khỏi class chính.
+    \item Đưa mỗi thuật toán vào một class riêng gọi là \textbf{Strategy}.
+    \item Các Strategy này phải tuân thủ cùng một \textbf{Interface}.
+    \item Class chính (\textit{Context}) chỉ giữ một tham chiếu đến Interface này.
+  \end{enumerate}
+
+  \vspace{0.5em}
+  \textbf{Lợi ích:}
+  \begin{itemize}
+    \item \textcolor{mygreen}{\textbf{Context}}: Không cần biết chi tiết thuật toán, chỉ cần gọi hàm \texttt{execute()}.
+    \item \textcolor{mygreen}{\textbf{Linh hoạt}}: Có thể tráo đổi thuật toán ngay khi chương trình đang chạy.
+    \item \textcolor{mygreen}{\textbf{Độc lập}}: Các thuật toán phát triển riêng biệt, không ảnh hưởng nhau.
+  \end{itemize}
+\end{frame}
+
+% ============================================================
+% SLIDE 4 — CODE VÍ DỤ
+% ============================================================
+\begin{frame}[fragile]{Strategy: Ví dụ minh họa}
+  \scriptsize
+  \begin{verbatim}
+// 1. Strategy Interface
+interface PaymentStrategy { void pay(int amount); }
+
+// 2. Concrete Strategies
+class CreditCard implements PaymentStrategy {
+    public void pay(int amount) { print("Quẹt thẻ: " + amount); }
+}
+class PayPal implements PaymentStrategy {
+    public void pay(int amount) { print("Trừ ví PayPal: " + amount); }
+}
+
+// 3. Context
+class Order {
+    private PaymentStrategy strategy;
+    public void setStrategy(PaymentStrategy s) { this.strategy = s; }
+    
+    public void checkout(int money) {
+        strategy.pay(money);  // Ủy quyền cho Strategy
+    }
+}
+  \end{verbatim}
+  \vspace{-0.3em}
+  \centering
+  \small \textcolor{mygreen}{Client có thể đổi từ CreditCard sang PayPal dễ dàng.}
+\end{frame}
+
+% ============================================================
+% SLIDE 5 — TRADE-OFFS
+% ============================================================
+\begin{frame}{Strategy: Được và Mất}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \textcolor{mygreen}{\textbf{Ưu điểm:}}
+      \begin{itemize}
+        \item \textbf{Clean Code:} Loại bỏ các khối `if/else` hoặc `switch` phức tạp.
+        \item \textbf{Open/Closed Principle:} Thêm thuật toán mới không cần sửa code cũ.
+        \item \textbf{Tách biệt (Isolation):} Logic nghiệp vụ tách rời khỏi chi tiết triển khai thuật toán.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \textcolor{myred}{\textbf{Nhược điểm:}}
+      \begin{itemize}
+        \item \textbf{Số lượng Class tăng:} Mỗi thuật toán là một file class mới.
+        \item \textbf{Client phải hiểu:} Người dùng (Client) phải biết sự khác nhau giữa các Strategy để chọn cho đúng.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+
+  \vspace{1em}
+  \centering
+  \fcolorbox{myorange}{white}{
+    \begin{minipage}{0.9\textwidth}
+      \centering \small
+      \textbf{Lưu ý:} Các Strategy nên là \textit{stateless} (không lưu trạng thái) để tránh lỗi khi dùng chung.
+    \end{minipage}
+  }
+\end{frame}
+
+% ============================================================
+% SLIDE 6 — KHI NÀO DÙNG?
+% ============================================================
+\begin{frame}{Strategy: Khi nào dùng?}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textcolor{mygreen}{\textbf{Nên dùng:}}
+      \begin{itemize}
+        \item Khi muốn sử dụng các biến thể khác nhau của một thuật toán.
+        \item Khi có quá nhiều điều kiện `if/else` chỉ để chọn cách xử lý.
+        \item Khi muốn giấu đi sự phức tạp của thuật toán khỏi người dùng.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \textcolor{myred}{\textbf{Không nên dùng:}}
+      \begin{itemize}
+        \item Nếu chỉ có 1-2 thuật toán và chúng hiếm khi thay đổi.
+        \item Logic quá đơn giản, việc tách class làm code rối thêm (Over-engineering).
+      \end{itemize}
+    \end{column}
+  \end{columns}
+
+  \vspace{1em}
+  \centering
+  \textbf{Dấu hiệu nhận biết:}
+  \textit{``Cùng input đầu vào, nhưng cần output/cách xử lý khác nhau tùy hoàn cảnh.''}
+\end{frame}
