@@ -6,3 +6,211 @@
     \Large\textcolor{myblue}{Creational Pattern}
   \end{center}
 \end{frame}
+
+% ============================================================
+% SLIDE 1 — BỐI CẢNH: Khi nào vấn đề xuất hiện?
+% ============================================================
+\begin{frame}[t]{Abstract Factory: Bối cảnh thực tế}
+  \small 
+  \textbf{Tình huống phổ biến:}
+  \begin{itemize}
+    \setlength{\itemsep}{0pt} % Loại bỏ khoảng cách thừa giữa các dòng
+    \item Hệ thống cần tạo ra các \textbf{họ sản phẩm liên quan}.
+    \item Các sản phẩm phải đảm bảo tính \textbf{tương thích} tuyệt đối.
+  \end{itemize}
+
+  \vspace{0.2em} % Thu hẹp khoảng cách giữa các khối
+  \textbf{Ví dụ thực tế:}
+  \begin{itemize}
+    \setlength{\itemsep}{0pt}
+    \item \textcolor{myblue}{Furniture Shop}: Ghế, bàn, sofa theo bộ (\textit{Modern}, \textit{Victorian}).
+    \item \textcolor{myblue}{Cross-Platform UI}: Toolkit (Button, Input) đồng bộ theo HĐH.
+    \item \textcolor{myblue}{Game Themes}: Bộ quái vật, vũ khí theo chủ đề \textit{Fantasy}.
+  \end{itemize}
+
+  \vspace{0.3em}
+  \centering
+  \textcolor{myred}{\textbf{Mấu chốt:}} Tránh "râu ông nọ cắm cằm bà kia" (vd: ghế \textit{Modern} trong bộ bàn \textit{Victorian}).
+\end{frame}
+
+% ============================================================
+% SLIDE 2 — NỖI ĐAU: Code không có pattern
+% ============================================================
+\begin{frame}[fragile]{Abstract Factory: Nỗi đau khi thiếu Pattern}
+  \small
+  \begin{columns}[T]
+    \begin{column}{0.55\textwidth}
+      \textbf{Cách làm ``Thủ công'':}\\[0.2em]
+      {\scriptsize Kiểm tra điều kiện ở mọi nơi}
+      \vspace{0.2em}
+      \begin{minipage}[t]{\textwidth}
+      \fontsize{7pt}{8pt}\selectfont
+      \begin{verbatim}
+// Code rải rác khắp nơi
+if (style == "Modern") {
+    chair = new ModernChair();
+    sofa = new ModernSofa();
+} else if (style == "Victorian") {
+    chair = new VictorianChair();
+    sofa = new VictorianSofa();
+}
+      \end{verbatim}
+      \end{minipage}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \textbf{Hậu quả:}
+      \begin{itemize}
+        \item \textcolor{myred}{Inconsistency}: Dễ chọn nhầm sản phẩm không cùng họ.
+        \item \textcolor{myred}{Rigidity}: Thêm một phong cách mới yêu cầu sửa `if/else` ở tất cả các module.
+        \item \textcolor{myred}{Tight Coupling}: Client phụ thuộc vào hàng tá concrete classes của sản phẩm.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ============================================================
+% SLIDE 3 — INSIGHT CỐT LÕI
+% ============================================================
+\begin{frame}{Abstract Factory: Insight cốt lõi}
+  \small
+  \begin{center}
+    \textbf{\textcolor{myblue}{Factory of Factories}} % Bỏ \Large để tiết kiệm chỗ
+  \end{center}
+  \vspace{-0.5em} % Thu hẹp khoảng cách
+  \textbf{Ý tưởng then chốt:}
+  \begin{enumerate}
+    \item \textbf{Interface họ}: Một đối tượng chứa nhiều Factory Methods cho cả họ sản phẩm.
+    \item \textbf{Composition}: Client ủy quyền việc tạo cho đối tượng Factory.
+    \item \textbf{Invariant}: Cam kết sản phẩm tạo ra luôn cùng biến thể.
+  \end{enumerate}
+
+  \textbf{Nguyên lý thiết kế:}
+  \begin{itemize}
+    \item \textcolor{mygreen}{\textbf{DIP}}: Chỉ làm việc với Abstract interfaces.
+    \item \textcolor{mygreen}{\textbf{OCP}}: Thêm họ sản phẩm mới mà không sửa Client.
+  \end{itemize}
+\end{frame}
+
+% ============================================================
+% SLIDE 4 — CẤU TRÚC & CÁCH HOẠT ĐỘNG
+% ============================================================
+\begin{frame}[fragile]{Abstract Factory: Cách hoạt động}
+  \small
+  \textbf{Các vai trò trong pattern:}
+  \begin{itemize}
+    \item \textcolor{myblue}{\textbf{Abstract Factory}}: Khai báo các phương thức tạo từng loại sản phẩm trừu tượng.
+    \item \textcolor{mygreen}{\textbf{Concrete Factory}}: Triển khai việc tạo các sản phẩm cụ thể cho một biến thể duy nhất.
+    \item \textcolor{mypurple}{\textbf{Abstract Products}}: Các interface cho từng loại sản phẩm trong họ.
+  \end{itemize}
+
+  \textbf{Flow thực thi:}
+  \begin{enumerate}
+    \item \textbf{Cấu hình}: Lúc khởi tạo, app chọn một Concrete Factory (vd: \texttt{ModernFactory}).
+    \item \textbf{Truyền Factory}: Client nhận factory này thông qua constructor/setter.
+    \item \textbf{Tạo bộ sản phẩm}: Client gọi \texttt{factory.createChair()} và \texttt{factory.createSofa()}.
+    \item \textbf{Vận hành}: Các sản phẩm trả về tự động tương thích vì chúng cùng xuất phát từ một factory biến thể.
+  \end{enumerate}
+
+  \vspace{0.2em}
+  \textcolor{mygreen}{\textbf{Kết quả:}} Client code hoàn toàn sạch bóng các từ khóa \texttt{new} cho sản phẩm cụ thể.
+\end{frame}
+
+% ============================================================
+% SLIDE 5 — TRADE-OFFS
+% ============================================================
+\begin{frame}{Abstract Factory: Được và Mất}
+  \small
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \textcolor{mygreen}{\textbf{Được gì:}}
+      \begin{itemize}
+        \item \textbf{Consistency}: Đảm bảo các sản phẩm luôn đi kèm đúng bộ.
+        \item \textbf{Decoupling}: Client và Concrete Products không biết nhau.
+        \item \textbf{SRP}: Logic tạo các họ sản phẩm được tập trung hóa.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \textcolor{myred}{\textbf{Mất gì:}}
+      \begin{itemize}
+        \item \textbf{Complexity}: Quá nhiều interface và class mới làm code trở nên cồng kềnh.
+        \item \textbf{Hard to Extend}: Thêm một \textit{loại} sản phẩm mới (vd: CoffeeTable) vào họ yêu cầu sửa interface Factory gốc.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.5em}
+  \centering
+  \textcolor{myorange}{\textbf{Lưu ý:}} Thường tiến hóa từ \textbf{Factory Method} khi số lượng họ sản phẩm bắt đầu tăng lên.
+\end{frame}
+
+% ================================
+% SLIDE 6 - SO SÁNH FACTORY METHOD vs ABSTRACT FACTORY
+% ================================
+
+\begin{frame}{Factory Method vs Abstract Factory}
+
+\textbf{Giống nhau:}
+Creational Pattern • Ẩn việc \texttt{new} khỏi client • Tuân theo OCP
+
+\vspace{0.3cm}
+
+\textbf{Khác nhau cốt lõi}
+
+\small
+\setlength{\tabcolsep}{4pt} % giảm khoảng cách cột
+
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+ & \textbf{Factory Method} & \textbf{Abstract Factory} \\
+\hline
+Tạo gì? & Một Product & Một họ Product \\
+\hline
+Mức độ & Class override & Object composition \\
+\hline
+Mục tiêu & Chọn implementation & Chọn ecosystem \\
+\hline
+Scale & Nhỏ, đơn giản & Nhiều product đi cùng \\
+\hline
+Ví dụ & 1 loại Document & Cả bộ UI Windows/Mac \\
+\hline
+\end{tabular}
+\end{center}
+
+\normalsize
+\vspace{0.3cm}
+
+\begin{block}{Tóm tắt}
+Factory Method → tạo \textbf{một} sản phẩm \\
+Abstract Factory → tạo \textbf{cả một hệ sinh thái} sản phẩm.
+\end{block}
+
+\end{frame}
+
+% ============================================================
+% SLIDE 7 — KHI NÀO DÙNG?
+% ============================================================
+\begin{frame}{Abstract Factory: Khi nào dùng?}
+  \small
+  \textcolor{mygreen}{\textbf{Nên dùng khi:}}
+  \begin{itemize}
+    \item Code cần làm việc với nhiều họ sản phẩm mà không muốn phụ thuộc vào class cụ thể.
+    \item Muốn cưỡng chế việc sử dụng đồng bộ các đối tượng liên quan.
+  \end{itemize}
+
+  \vspace{0.3em}
+  \textcolor{myred}{\textbf{Tránh dùng khi:}}
+  \begin{itemize}
+    \item Các lớp sản phẩm cụ thể \textbf{không bao giờ thay đổi} hoặc chỉ có một biến thể duy nhất.
+    \item Bài toán đơn giản, việc tách class làm tăng Cognitive Load vô ích.
+  \end{itemize}
+
+  \vspace{0.5em}
+  \centering
+  \fcolorbox{myorange}{white}{
+    \begin{minipage}{0.9\textwidth}
+      \centering \scriptsize
+      \textbf{Checklist Kiến trúc:} Liệu chi phí vận hành (Cognitive Load) có tương xứng với tính an toàn (Invariants) mà họ sản phẩm này mang lại?
+    \end{minipage}
+  }
+\end{frame}

@@ -6,3 +6,176 @@
     \Large\textcolor{myblue}{Creational Pattern}
   \end{center}
 \end{frame}
+
+% ============================================================
+% SLIDE 1 — BỐI CẢNH
+% ============================================================
+\begin{frame}{Factory Method: Bối cảnh thực tế}
+  \small % Giảm kích thước chữ toàn slide để tránh tràn
+  \textbf{Tình huống phổ biến:}
+  \begin{itemize}
+    \item Hệ thống cần tạo đối tượng (Product) nhưng chưa biết chính xác loại cụ thể lúc thiết kế.
+    \item Việc khởi tạo phụ thuộc vào cấu hình hoặc logic tại runtime.
+  \end{itemize}
+
+  \textbf{Ví dụ thực tế:}
+  \begin{itemize}
+    \item \textcolor{myblue}{Logistics}: Ban đầu chỉ có \textit{Truck}, sau đó cần mở rộng thêm \textit{Ship}, \textit{Train}.
+    \item \textcolor{myblue}{UI Framework}: Nút bấm thay đổi theo hệ điều hành.
+    \item \textcolor{myblue}{Converters}: Xuất file sang PDF, Word, hoặc HTML.
+  \end{itemize}
+
+  \vspace{0.5em}
+  \centering
+  \textcolor{myred}{\textbf{Mấu chốt:}} Phụ thuộc vào \textbf{Concrete Class} làm hệ thống bị "cứng", khó mở rộng mà không sửa code cũ.
+\end{frame}
+
+% ============================================================
+% SLIDE 2 — NỖI ĐAU
+% ============================================================
+\begin{frame}[fragile]{Factory Method: Nỗi đau khi thiếu Pattern}
+  \begin{columns}[T]
+    \begin{column}{0.52\textwidth}
+      \textbf{Cách làm ``Ngây thơ'':}\\[0.2em]
+      {\scriptsize Dùng \texttt{new} trực tiếp và switch-case}
+      
+      \vspace{0.3em}
+      \begin{minipage}[t]{\textwidth}
+      \fontsize{7pt}{8pt}\selectfont
+      \begin{verbatim}
+class Logistics {
+  void planDelivery(String type) {
+    Transport t;
+    if (type == "Truck") 
+        t = new Truck();
+    else if (type == "Ship") 
+        t = new Ship();
+    t.deliver();
+  }
+}
+      \end{verbatim}
+      \end{minipage}
+    \end{column}
+    \begin{column}{0.44\textwidth}
+      \small
+      \textbf{Hậu quả:}
+      \begin{itemize}
+        \item \textcolor{myred}{Tight Coupling}: Phụ thuộc trực tiếp vào class cụ thể.
+        \item \textcolor{myred}{Vi phạm OCP}: Thêm phương tiện mới $=$ Sửa logic cốt lõi.
+        \item \textcolor{myred}{Khó Unit Test}: Không thể mock các class bị "hard-code".
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ============================================================
+% SLIDE 3 — INSIGHT CỐT LÕI (Slide bị lỗi trong hình)
+% ============================================================
+\begin{frame}{Factory Method: Insight cốt lõi}
+  \small % Khắc phục lỗi tràn footer bằng cách dùng chữ nhỏ hơn
+  \begin{center}
+    \large\textcolor{myblue}{\textbf{Virtualize Object Creation}}
+  \end{center}
+
+  \textbf{Ý tưởng then chốt:}
+  \begin{enumerate}
+    \item \textbf{Đóng gói sự biến thiên}: Tách biệt logic \textit{sử dụng} và \textit{tạo} đối tượng.
+    \item \textbf{Ủy quyền cho Subclass}: Class con quyết định \textit{Product} nào sẽ được tạo.
+    \item \textbf{Lập trình với Interface}: Client không quan tâm Concrete class là gì.
+  \end{enumerate}
+
+  \vspace{0.2em}
+  \textbf{Nguyên lý thiết kế:}
+  \begin{itemize}
+    \item \textcolor{mygreen}{\textbf{DIP}}: Phụ thuộc vào abstraction, không phụ thuộc vào concrete class.
+    \item \textcolor{mygreen}{\textbf{Encapsulation of Variation}}: Biến thiên về loại sản phẩm được khóa sau Factory Method.
+  \end{itemize}
+\end{frame}
+
+% ============================================================
+% SLIDE 4 — CẤU TRÚC & CÁCH HOẠT ĐỘNG
+% ============================================================
+\begin{frame}[fragile]{Factory Method: Cách hoạt động}
+  \small
+  \textbf{Các vai trò trong pattern:}
+  \begin{itemize}
+    \item \textcolor{myblue}{\textbf{Product}}: Interface quy định các khả năng của sản phẩm.
+    \item \textcolor{mygreen}{\textbf{Creator}}: Lớp chứa logic nghiệp vụ, khai báo Factory Method.
+    \item \textcolor{mypurple}{\textbf{ConcreteCreator}}: Thực thi Factory Method để trả về sản phẩm cụ thể.
+  \end{itemize}
+
+  \vspace{0.3em}
+  \textbf{Flow thực thi:}
+
+  \vspace{0.2em}
+  \begin{minipage}[t]{\textwidth}
+  \fontsize{7pt}{8pt}\selectfont
+  \begin{verbatim}
+  // Client chỉ làm việc với lớp trừu tượng
+  Logistics app = new SeaLogistics(); 
+  app.planDelivery(); 
+  // Inside planDelivery: 
+  //   Transport t = createTransport(); // Lấy "Ship" tại runtime
+  //   t.deliver();
+  \end{verbatim}
+  \end{minipage}
+
+  \vspace{0.2em}
+  \textcolor{mygreen}{\textbf{Kết quả:}} Logic nghiệp vụ không hề biết mình đang dùng \textit{Truck} hay \textit{Ship}.
+\end{frame}
+
+% ============================================================
+% SLIDE 5 — TRADE-OFFS
+% ============================================================
+\begin{frame}{Factory Method: Được và Mất}
+  \small
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \textcolor{mygreen}{\textbf{Được gì:}}
+      \begin{itemize}
+        \item \textbf{Loose Coupling}: Tránh phụ thuộc cứng.
+        \item \textbf{Tuân thủ SRP}: Gom logic tạo object về một nơi.
+        \item \textbf{Tuân thủ OCP}: Mở rộng dễ dàng.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \textcolor{myred}{\textbf{Mất gì:}}
+      \begin{itemize}
+        \item \textbf{Class Explosion}: Tăng số lượng class con.
+        \item \textbf{Phức tạp hóa}: Cần nhiều lớp trung gian hơn.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.5em}
+  \centering
+  \textcolor{myorange}{\textbf{Lưu ý:}} Phù hợp khi logic tạo đối tượng phức tạp và cần mở rộng thường xuyên.
+\end{frame}
+
+% ============================================================
+% SLIDE 6 — KHI NÀO DÙNG?
+% ============================================================
+\begin{frame}{Factory Method: Khi nào dùng? Khi nào là thừa?}
+  \small
+  \textcolor{mygreen}{\textbf{Nên dùng khi:}}
+  \begin{itemize}
+    \item Cần cho phép người dùng framework mở rộng thành phần nội bộ.
+    \item Muốn tái sử dụng đối tượng thay vì tạo mới liên tục (caching).
+  \end{itemize}
+
+  \vspace{0.3em}
+  \textcolor{myred}{\textbf{Over-engineering khi:}}
+  \begin{itemize}
+    \item Số lượng sản phẩm là \textbf{cố định} và rất ít
+    \item Việc tạo object quá đơn giản, không có kế hoạch mở rộng.
+  \end{itemize}
+
+  \vspace{0.5em}
+  \centering
+  \fcolorbox{myorange}{white}{
+    \begin{minipage}{0.9\textwidth}
+      \centering \scriptsize
+      \textbf{Câu hỏi:} Nếu loại bỏ pattern này, business rule nào sẽ bị phá đầu tiên?
+    \end{minipage}
+  }
+\end{frame}
